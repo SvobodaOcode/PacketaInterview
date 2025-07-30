@@ -138,6 +138,7 @@ struct PokemonIntegrationTests {
 
     @Test("State transitions are consistent")
     func stateTransitionsConsistent() async throws {
+        ImageCacheManager.shared.clearCache()
         let mockService = PokemonMockService()
         let viewModel = PokemonViewModel(pokemonService: mockService)
 

@@ -35,6 +35,10 @@ class PokemonViewModel: ObservableObject {
     @Published var image: UIImage?
     @Published var isDownloading = false
 
+    // Dictionary to track cached images for list display
+    @Published var cachedImages: [Int: UIImage] = [:]
+    private let imageCache = ImageCacheManager.shared
+
     private var detailFetchTask: Task<Void, Never>?
 
     @Published var selectedPokemon: Pokemon? {
@@ -76,6 +80,9 @@ class PokemonViewModel: ObservableObject {
             self.filteredPokemonList = allPokemon
             self.malePokemon = malePokemons
             self.femalePokemon = femalePokemons
+
+            // Load cached images for the Pokemon list
+            loadCachedImages()
         } catch {
             print("Failed to fetch initial Pokemon data: \(error)")
         }
@@ -108,7 +115,16 @@ class PokemonViewModel: ObservableObject {
             }
 
             pokemonDetail = detail
-            print("Set detail of \(pokemon.name) \(detail.id)")
+            guard let pokemonDetail else { return }
+
+            // Check cache first
+            if let cachedImage = imageCache.loadImage(for: pokemonDetail.id) {
+                image = cachedImage
+                cachedImages[pokemonDetail.id] = cachedImage
+                print("Set detail with cached image of \(pokemon.name) \(detail.id)")
+            } else {
+                print("Set detail of \(pokemon.name) \(detail.id)")
+            }
         } catch {
             // Don't show error if task was cancelled
             if !Task.isCancelled {
@@ -120,12 +136,43 @@ class PokemonViewModel: ObservableObject {
     @MainActor
     func loadImage() async {
         guard let pokemonDetail, image == nil else { return }
+
+        // Check cache first
+        if let cachedImage = imageCache.loadImage(for: pokemonDetail.id) {
+            image = cachedImage
+            cachedImages[pokemonDetail.id] = cachedImage
+            return
+        }
+
         isDownloading = true
         defer { isDownloading = false }
         do {
-            image = try await pokemonService.downloadImage(from: pokemonDetail.sprites.frontDefault)
+            let downloadedImage = try await pokemonService.downloadImage(from: pokemonDetail.sprites.frontDefault)
+            image = downloadedImage
+
+            // Save to cache
+            if let downloadedImage {
+                imageCache.saveImage(downloadedImage, for: pokemonDetail.id)
+                cachedImages[pokemonDetail.id] = downloadedImage
+            }
         } catch {
             print("Failed to download image: \(error)")
         }
+    }
+
+    // MARK: - Image Caching for List
+
+    private func loadCachedImages() {
+        for pokemon in allPokemonList {
+            guard let pokemonId = pokemon.id else { continue }
+            if let cachedImage = imageCache.loadImage(for: pokemonId) {
+                cachedImages[pokemonId] = cachedImage
+            }
+        }
+    }
+
+    func getCachedImage(for pokemon: Pokemon) -> UIImage? {
+        guard let pokemonId = pokemon.id else { return nil }
+        return cachedImages[pokemonId]
     }
 }

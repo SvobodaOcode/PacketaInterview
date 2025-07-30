@@ -318,6 +318,8 @@ struct PokemonViewModelTests {
 
     @Test("error handling in image loading")
     func errorHandlingImageLoading() async throws {
+        ImageCacheManager.shared.clearCache()
+        
         let failingService = FailingPokemonService()
         let viewModel = PokemonViewModel(pokemonService: failingService)
 

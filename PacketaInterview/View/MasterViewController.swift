@@ -59,12 +59,43 @@ class MasterViewController: UITableViewController {
                 self?.tableView.reloadData()
             }
             .store(in: &cancellables)
+
+        viewModel.$cachedImages
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                // Update visible cells when cached images change
+                self?.updateVisibleCells()
+            }
+            .store(in: &cancellables)
     }
 
     @objc func sortingControlAction(_ segmentedControl: UISegmentedControl) {
         let selectedIndex = segmentedControl.selectedSegmentIndex
         if let sortOption = SortOption(rawValue: selectedIndex) {
             viewModel.sortPokemon(by: sortOption)
+        }
+    }
+
+    private func configureCellContent(cell: UITableViewCell, pokemon: Pokemon) {
+        var content = cell.defaultContentConfiguration()
+        content.text = pokemon.name.capitalized
+
+        if let cachedImage = viewModel.getCachedImage(for: pokemon) {
+            content.image = cachedImage
+        } else {
+            content.image = nil
+        }
+
+        cell.contentConfiguration = content
+    }
+
+    private func updateVisibleCells() {
+        for cell in tableView.visibleCells {
+            guard let indexPath = tableView.indexPath(for: cell),
+                  indexPath.row < viewModel.filteredPokemonList.count else { continue }
+
+            let pokemon = viewModel.filteredPokemonList[indexPath.row]
+            configureCellContent(cell: cell, pokemon: pokemon)
         }
     }
 
@@ -77,7 +108,7 @@ class MasterViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let pokemon = viewModel.filteredPokemonList[indexPath.row]
-        cell.textLabel!.text = pokemon.name.capitalized
+        configureCellContent(cell: cell, pokemon: pokemon)
         return cell
     }
 
