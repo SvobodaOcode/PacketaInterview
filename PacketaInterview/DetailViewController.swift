@@ -7,76 +7,86 @@ import SwiftUI
 import UIKit
 
 struct PokemonDetailView: View {
-    let detail: [String: Any]
-    @State private var image: UIImage! = nil
-    @State private var isImageDownloaded = false
+    let detail: PokemonDetail
+    @State private var image: UIImage?
+    @State private var isDownloading = false
 
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
-            Text((detail["name"] as! String).capitalized)
+            Text(detail.name.capitalized)
                 .font(.largeTitle)
                 .padding(.top, 20)
 
-            let sprites = detail["sprites"] as! [String: Any]
-            let frontDefault = sprites["front_default"] as! String
-            let url = URL(string: frontDefault)!
-
-            AsyncImage(url: url)
-                .frame(width: 150, height: 150)
-
-            Text("ID: \(detail["id"] as! Int)")
-            Text("Height: \(detail["height"] as! Int)")
-            Text("Weight: \(detail["weight"] as! Int)")
-
-            if !isImageDownloaded {
-                Button("Download Image") {
-                    downloadImage()
+            if let image = image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 150, maxHeight: 150)
+            } else {
+                if isDownloading {
+                    ProgressView()
+                        .frame(width: 150, height: 150)
+                } else {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(width: 150, height: 150)
+                        .cornerRadius(8)
                 }
-                .padding()
             }
 
+            Text("ID: \(detail.id)")
+            Text("Height: \(detail.height)")
+            Text("Weight: \(detail.weight)")
+
             Spacer()
+
+            if image == nil {
+                Button("Download Image") {
+                    Task {
+                        isDownloading = true
+                        await loadImage()
+                        isDownloading = false
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .padding()
+                .disabled(isDownloading)
+            }
         }
         .padding()
     }
 
-    private func downloadImage() {
-        let sprites = detail["sprites"] as! [String: Any]
-        let frontDefault = sprites["front_default"] as! String
-        let url = URL(string: frontDefault)!
-
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            let downloadedImage = UIImage(data: data!)
-            self.image = downloadedImage
-            self.isImageDownloaded = true
-        }.resume()
+    private func loadImage() async {
+        guard image == nil else { return }
+        do {
+            image = try await PokemonService.shared.downloadImage(from: detail.sprites.frontDefault)
+        } catch {
+            print("Failed to download image: \(error)")
+        }
     }
 }
 
 class DetailViewController: UIViewController {
-    var pokemonURL: String?
-    var pokemonDetail: [String: Any]?
+    var pokemon: Pokemon?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        fetchPokemonDetail()
+        Task {
+            await fetchPokemonDetail()
+        }
     }
 
-    private func fetchPokemonDetail() {
-        guard let urlString = pokemonURL, let url = URL(string: urlString) else { return }
-
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            let detail = try! JSONSerialization.jsonObject(with: data!, options: []) as! [String: Any]
-            self.pokemonDetail = detail
-            DispatchQueue.main.async {
-                self.setupSwiftUIView()
-            }
-        }.resume()
+    private func fetchPokemonDetail() async {
+        guard let pokemon else { return }
+        do {
+            let detail = try await PokemonService.shared.fetchPokemonDetail(from: pokemon.url)
+            setupSwiftUIView(with: detail)
+        } catch {
+            print("Failed to fetch Pokemon detail: \(error)")
+        }
     }
 
-    private func setupSwiftUIView() {
-        guard let detail = pokemonDetail else { return }
-
+    private func setupSwiftUIView(with detail: PokemonDetail) {
         let detailView = PokemonDetailView(detail: detail)
         let hostingController = UIHostingController(rootView: detailView)
 
