@@ -12,8 +12,15 @@ enum APIError: Error {
     case decodingError(Error)
 }
 
-class PokemonService {
-    static let shared = PokemonService()
+protocol PokemonServiceType {
+    func fetchPokemonList() async throws -> [Pokemon]
+    func fetchGenderedPokemonList(genderId: Int) async throws -> [Pokemon]
+    func fetchPokemonDetail(from url: URL) async throws -> PokemonDetail
+    func downloadImage(from url: URL) async throws -> UIImage?
+}
+
+class PokemonService: PokemonServiceType {
+    static let shared: PokemonServiceType = PokemonService()
     private let baseURL = "https://pokeapi.co/api/v2"
     private let decoder = JSONDecoder()
 
