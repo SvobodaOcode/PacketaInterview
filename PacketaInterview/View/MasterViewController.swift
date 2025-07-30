@@ -7,6 +7,7 @@
 
 import Combine
 import SnapKit
+import SwiftUI
 import UIKit
 
 class MasterViewController: UITableViewController {
@@ -89,4 +90,25 @@ class MasterViewController: UITableViewController {
         let detailViewController = DetailViewController(viewModel: viewModel)
         splitViewController?.showDetailViewController(detailViewController, sender: self)
     }
+}
+
+// MARK: - SwiftUI Preview Wrapper
+struct MasterViewControllerRepresentable: UIViewControllerRepresentable {
+    let viewModel: PokemonViewModel
+
+    func makeUIViewController(context: Context) -> UINavigationController {
+        let masterViewController = MasterViewController(viewModel: viewModel)
+        return UINavigationController(rootViewController: masterViewController)
+    }
+
+    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {
+    }
+}
+
+#Preview("Pokemon Master List") {
+    let mockService = PokemonMockService()
+    let viewModel = PokemonViewModel(pokemonService: mockService)
+
+    return MasterViewControllerRepresentable(viewModel: viewModel)
+        .ignoresSafeArea()
 }

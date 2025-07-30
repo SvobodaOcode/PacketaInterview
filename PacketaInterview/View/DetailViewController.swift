@@ -90,3 +90,21 @@ class DetailViewController: UIViewController {
         ])
     }
 }
+
+#Preview("Pokemon Detail - With Image") {
+    let mockService = PokemonMockService()
+    let viewModel = PokemonViewModel(pokemonService: mockService)
+
+    // Set up sample data
+    let samplePokemon = Pokemon(name: "charmander", url: URL(string: "https://pokeapi.co/api/v2/pokemon/4/")!)
+    viewModel.selectedPokemon = samplePokemon
+
+    return PokemonDetailView(viewModel: viewModel)
+}
+
+#Preview("Pokemon Detail - No Selection") {
+    let mockService = PokemonMockService()
+    let viewModel = PokemonViewModel(pokemonService: mockService)
+
+    return PokemonDetailView(viewModel: viewModel)
+}
