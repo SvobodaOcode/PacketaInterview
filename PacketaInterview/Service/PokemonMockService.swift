@@ -45,8 +45,13 @@ class PokemonMockService: PokemonServiceType {
     }
 
     func downloadImage(from url: URL) async throws -> UIImage? {
-        // In a real mock, you might return a placeholder image.
-        // For now, we'll return nil to simulate an image not being available immediately.
-        return nil
+        let symbolName = "photo"
+        let configuration = UIImage.SymbolConfiguration(pointSize: 60, weight: .regular)
+        
+        guard let symbolImage = UIImage(systemName: symbolName, withConfiguration: configuration) else {
+            return nil
+        }
+        
+        return symbolImage
     }
 }
