@@ -34,12 +34,18 @@ class PokemonViewModel: ObservableObject {
     @Published var pokemonDetail: PokemonDetail?
     @Published var image: UIImage?
     @Published var isDownloading = false
+
+    private var detailFetchTask: Task<Void, Never>?
+
     @Published var selectedPokemon: Pokemon? {
         didSet {
+            // Cancel any ongoing detail fetch task
+            detailFetchTask?.cancel()
+
             pokemonDetail = nil
             image = nil
             if let selectedPokemon {
-                Task {
+                detailFetchTask = Task {
                     await fetchPokemonDetail(for: selectedPokemon)
                 }
             }
@@ -50,6 +56,10 @@ class PokemonViewModel: ObservableObject {
 
     init(pokemonService: PokemonServiceType = PokemonService.shared) {
         self.pokemonService = pokemonService
+    }
+
+    deinit {
+        detailFetchTask?.cancel()
     }
 
     @MainActor
@@ -90,9 +100,20 @@ class PokemonViewModel: ObservableObject {
     @MainActor
     func fetchPokemonDetail(for pokemon: Pokemon) async {
         do {
-            pokemonDetail = try await pokemonService.fetchPokemonDetail(from: pokemon.url)
+            let detail = try await pokemonService.fetchPokemonDetail(from: pokemon.url)
+
+            // Check if task was cancelled or if selection changed
+            guard !Task.isCancelled, selectedPokemon?.name == pokemon.name else {
+                return
+            }
+
+            pokemonDetail = detail
+            print("Set detail of \(pokemon.name) \(detail.id)")
         } catch {
-            print("Failed to fetch Pokemon detail: \(error)")
+            // Don't show error if task was cancelled
+            if !Task.isCancelled {
+                print("Failed to fetch Pokemon detail: \(error)")
+            }
         }
     }
 
