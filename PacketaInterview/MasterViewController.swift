@@ -17,7 +17,7 @@ class MasterViewController: UITableViewController {
         super.viewDidLoad()
 
         title = "Pokémon"
-        sortingControl.addTarget(self, action: "sortingControlActions:", for: .valueChanged)
+        sortingControl.addTarget(self, action: #selector(sortingControlAction(_:)), for: .valueChanged)
 
         let headerView = UIView()
         headerView.addSubview(sortingControl)
