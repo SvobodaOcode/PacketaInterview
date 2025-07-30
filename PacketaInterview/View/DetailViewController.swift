@@ -2,6 +2,8 @@
 //  DetailViewController.swift
 //  PacketaInterview
 //
+//  Created by Marco Freedom on 30.07.2025.
+//
 
 import SwiftUI
 import UIKit

@@ -2,7 +2,7 @@
 //  PokemonMockService.swift
 //  PacketaInterview
 //
-//  Created by Gemini on 2024-01-01.
+//  Created by Marco Freedom on 30.07.2025.
 //
 
 import UIKit
