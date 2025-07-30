@@ -10,7 +10,18 @@
 		AD1498F32CDB46EB004A84A0 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = AD1498F22CDB46EB004A84A0 /* SnapKit */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		A9B45B8C2E3A9DE200F5ABDA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AD1498CF2CDB4536004A84A0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AD1498D62CDB4536004A84A0;
+			remoteInfo = PacketaInterview;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		A9B45B882E3A9DE200F5ABDA /* PacketaInterviewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacketaInterviewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD1498D72CDB4536004A84A0 /* PacketaInterview.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PacketaInterview.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -25,6 +36,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		A9B45B892E3A9DE200F5ABDA /* PacketaInterviewTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PacketaInterviewTests;
+			sourceTree = "<group>";
+		};
 		AD1498D92CDB4536004A84A0 /* PacketaInterview */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -36,6 +52,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		A9B45B852E3A9DE200F5ABDA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AD1498D42CDB4536004A84A0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -51,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				AD1498D92CDB4536004A84A0 /* PacketaInterview */,
+				A9B45B892E3A9DE200F5ABDA /* PacketaInterviewTests */,
 				AD1498D82CDB4536004A84A0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,6 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				AD1498D72CDB4536004A84A0 /* PacketaInterview.app */,
+				A9B45B882E3A9DE200F5ABDA /* PacketaInterviewTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,6 +91,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		A9B45B872E3A9DE200F5ABDA /* PacketaInterviewTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A9B45B902E3A9DE200F5ABDA /* Build configuration list for PBXNativeTarget "PacketaInterviewTests" */;
+			buildPhases = (
+				A9B45B842E3A9DE200F5ABDA /* Sources */,
+				A9B45B852E3A9DE200F5ABDA /* Frameworks */,
+				A9B45B862E3A9DE200F5ABDA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A9B45B8D2E3A9DE200F5ABDA /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A9B45B892E3A9DE200F5ABDA /* PacketaInterviewTests */,
+			);
+			name = PacketaInterviewTests;
+			packageProductDependencies = (
+			);
+			productName = PacketaInterviewTests;
+			productReference = A9B45B882E3A9DE200F5ABDA /* PacketaInterviewTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		AD1498D62CDB4536004A84A0 /* PacketaInterview */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AD1498EA2CDB4537004A84A0 /* Build configuration list for PBXNativeTarget "PacketaInterview" */;
@@ -96,9 +144,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1610;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
+					A9B45B872E3A9DE200F5ABDA = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = AD1498D62CDB4536004A84A0;
+					};
 					AD1498D62CDB4536004A84A0 = {
 						CreatedOnToolsVersion = 16.1;
 					};
@@ -122,11 +174,19 @@
 			projectRoot = "";
 			targets = (
 				AD1498D62CDB4536004A84A0 /* PacketaInterview */,
+				A9B45B872E3A9DE200F5ABDA /* PacketaInterviewTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		A9B45B862E3A9DE200F5ABDA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AD1498D52CDB4536004A84A0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -137,6 +197,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		A9B45B842E3A9DE200F5ABDA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AD1498D32CDB4536004A84A0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -146,7 +213,53 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		A9B45B8D2E3A9DE200F5ABDA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AD1498D62CDB4536004A84A0 /* PacketaInterview */;
+			targetProxy = A9B45B8C2E3A9DE200F5ABDA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		A9B45B8E2E3A9DE200F5ABDA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TL4ZC2M59J;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.ocode.PacketaInterviewTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PacketaInterview.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PacketaInterview";
+			};
+			name = Debug;
+		};
+		A9B45B8F2E3A9DE200F5ABDA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TL4ZC2M59J;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.ocode.PacketaInterviewTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PacketaInterview.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PacketaInterview";
+			};
+			name = Release;
+		};
 		AD1498EB2CDB4537004A84A0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -325,6 +438,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		A9B45B902E3A9DE200F5ABDA /* Build configuration list for PBXNativeTarget "PacketaInterviewTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A9B45B8E2E3A9DE200F5ABDA /* Debug */,
+				A9B45B8F2E3A9DE200F5ABDA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		AD1498D22CDB4536004A84A0 /* Build configuration list for PBXProject "PacketaInterview" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
