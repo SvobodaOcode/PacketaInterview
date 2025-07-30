@@ -7,7 +7,7 @@ import SwiftUI
 import UIKit
 
 struct PokemonDetailView: View {
-    @StateObject var viewModel: PokemonDetailViewModel
+    @ObservedObject var viewModel: PokemonViewModel
 
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
@@ -49,27 +49,29 @@ struct PokemonDetailView: View {
                     .padding()
                     .disabled(viewModel.isDownloading)
                 }
-            } else {
+            } else if viewModel.selectedPokemon != nil {
                 ProgressView()
+            } else {
+                Text("Select a Pokémon")
+                    .font(.largeTitle)
             }
         }
         .padding()
-        .onAppear {
-            Task {
-                await viewModel.fetchPokemonDetail()
-            }
-        }
     }
 }
 
 class DetailViewController: UIViewController {
-    var pokemon: Pokemon?
+    var viewModel: PokemonViewModel?
+
+    convenience init(viewModel: PokemonViewModel) {
+        self.init()
+        self.viewModel = viewModel
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        guard let pokemon = pokemon else { return }
+        guard let viewModel else { return }
 
-        let viewModel = PokemonDetailViewModel(pokemon: pokemon)
         let detailView = PokemonDetailView(viewModel: viewModel)
         let hostingController = UIHostingController(rootView: detailView)
 

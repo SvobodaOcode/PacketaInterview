@@ -5,8 +5,8 @@
 //  Created by Gemini on 2024-01-01.
 //
 
-import Foundation
 import Combine
+import UIKit
 
 enum SortOption: Int, CaseIterable {
     case all
@@ -30,6 +30,21 @@ class PokemonViewModel: ObservableObject {
     private var allPokemonList = [Pokemon]()
     private var malePokemon = [Pokemon]()
     private var femalePokemon = [Pokemon]()
+
+    @Published var pokemonDetail: PokemonDetail?
+    @Published var image: UIImage?
+    @Published var isDownloading = false
+    @Published var selectedPokemon: Pokemon? {
+        didSet {
+            pokemonDetail = nil
+            image = nil
+            if let selectedPokemon {
+                Task {
+                    await fetchPokemonDetail(for: selectedPokemon)
+                }
+            }
+        }
+    }
 
     private let pokemonService: PokemonServiceType
 
@@ -69,6 +84,27 @@ class PokemonViewModel: ObservableObject {
         case .genderless:
             let genderedNames = Set(malePokemon.map { $0.name } + femalePokemon.map { $0.name })
             filteredPokemonList = allPokemonList.filter { !genderedNames.contains($0.name) }
+        }
+    }
+
+    @MainActor
+    func fetchPokemonDetail(for pokemon: Pokemon) async {
+        do {
+            pokemonDetail = try await pokemonService.fetchPokemonDetail(from: pokemon.url)
+        } catch {
+            print("Failed to fetch Pokemon detail: \(error)")
+        }
+    }
+
+    @MainActor
+    func loadImage() async {
+        guard let pokemonDetail, image == nil else { return }
+        isDownloading = true
+        defer { isDownloading = false }
+        do {
+            image = try await pokemonService.downloadImage(from: pokemonDetail.sprites.frontDefault)
+        } catch {
+            print("Failed to download image: \(error)")
         }
     }
 }

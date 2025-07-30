@@ -12,15 +12,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         window = UIWindow(frame: UIScreen.main.bounds)
 
+        let viewModel = PokemonViewModel()
         let splitViewController = UISplitViewController()
         splitViewController.delegate = self
-        splitViewController.preferredDisplayMode = .allVisible
+        splitViewController.preferredDisplayMode = .oneBesideSecondary
 
-        let masterViewController = MasterViewController()
+        let masterViewController = MasterViewController(viewModel: viewModel)
         masterViewController.title = "Pokemon"
         let masterNavigationController = UINavigationController(rootViewController: masterViewController)
 
-        let detailViewController = DetailViewController()
+        let detailViewController = DetailViewController(viewModel: viewModel)
         let detailNavigationController = UINavigationController(rootViewController: detailViewController)
 
         splitViewController.viewControllers = [masterNavigationController, detailNavigationController]

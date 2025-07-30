@@ -10,8 +10,17 @@ import UIKit
 class MasterViewController: UITableViewController {
     let sortingControl = UISegmentedControl(items: SortOption.allCases.map { $0.title })
 
-    private var viewModel = PokemonViewModel()
+    private var viewModel: PokemonViewModel
     private var cancellables = Set<AnyCancellable>()
+
+    init(viewModel: PokemonViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -73,9 +82,9 @@ class MasterViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedPokemon = viewModel.filteredPokemonList[indexPath.row]
+        viewModel.selectedPokemon = selectedPokemon
 
-        let detailViewController = DetailViewController()
-        detailViewController.pokemon = selectedPokemon
-        navigationController!.pushViewController(detailViewController, animated: true)
+        let detailViewController = DetailViewController(viewModel: viewModel)
+        splitViewController?.showDetailViewController(detailViewController, sender: self)
     }
 }
