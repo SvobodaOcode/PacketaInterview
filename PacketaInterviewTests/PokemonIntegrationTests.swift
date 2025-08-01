@@ -49,7 +49,6 @@ struct PokemonIntegrationTests {
         await viewModel.fetchInitialData()
         #expect(viewModel.filteredPokemonList.count == 3)
         #expect(viewModel.selectedPokemon == nil)
-        #expect(viewModel.pokemonDetail == nil)
         #expect(viewModel.image == nil)
 
         // 2. User changes filter to male
@@ -65,8 +64,7 @@ struct PokemonIntegrationTests {
         try await Task.sleep(for: .milliseconds(100))
 
         #expect(viewModel.selectedPokemon == selectedPokemon)
-        #expect(viewModel.pokemonDetail != nil)
-        #expect(viewModel.pokemonDetail?.name == "Mock Pokemon")
+        #expect(viewModel.selectedPokemon?.height != nil)
 
         // 4. User loads image
         await viewModel.loadImage()
@@ -89,7 +87,7 @@ struct PokemonIntegrationTests {
 
         // Wait for new detail
         try await Task.sleep(for: .milliseconds(100))
-        #expect(viewModel.pokemonDetail != nil)
+        #expect(viewModel.selectedPokemon?.height != nil)
 
         // 7. Load new image
         await viewModel.loadImage()
@@ -144,7 +142,6 @@ struct PokemonIntegrationTests {
 
         // Initial state
         #expect(viewModel.selectedPokemon == nil)
-        #expect(viewModel.pokemonDetail == nil)
         #expect(viewModel.image == nil)
         #expect(viewModel.isDownloading == false)
 
@@ -152,7 +149,6 @@ struct PokemonIntegrationTests {
 
         // After data fetch
         #expect(viewModel.selectedPokemon == nil)
-        #expect(viewModel.pokemonDetail == nil)
         #expect(viewModel.image == nil)
         #expect(viewModel.isDownloading == false)
         #expect(!viewModel.filteredPokemonList.isEmpty)
@@ -162,14 +158,14 @@ struct PokemonIntegrationTests {
 
         // State should update immediately for selection, detail comes async
         #expect(viewModel.selectedPokemon != nil)
-        #expect(viewModel.pokemonDetail == nil) // Initially nil, loads async
+        #expect(viewModel.selectedPokemon?.height == nil) // Initially nil, loads async
         #expect(viewModel.image == nil)
         #expect(viewModel.isDownloading == false)
 
         // Wait for detail
         try await Task.sleep(for: .milliseconds(100))
 
-        #expect(viewModel.pokemonDetail != nil)
+        #expect(viewModel.selectedPokemon?.height != nil)
         #expect(viewModel.image == nil) // Still nil until explicitly loaded
 
         // Load image
@@ -181,7 +177,7 @@ struct PokemonIntegrationTests {
         // Select different pokemon - should clear state
         viewModel.selectedPokemon = viewModel.filteredPokemonList[1] // Different pokemon
 
-        #expect(viewModel.pokemonDetail == nil) // Cleared immediately
+        #expect(viewModel.selectedPokemon?.height == nil) // Cleared immediately
         #expect(viewModel.image == nil) // Cleared immediately
         #expect(viewModel.isDownloading == false)
     }
@@ -201,7 +197,7 @@ struct PokemonIntegrationTests {
         // Try to fetch detail - should fail gracefully
         let testPokemon = PokemonTestHelpers.createPokemon(name: "test", id: 1)
         await viewModel.fetchPokemonDetail(for: testPokemon)
-        #expect(viewModel.pokemonDetail == nil)
+        #expect(viewModel.selectedPokemon == nil)
 
         // State should remain consistent despite errors
         #expect(viewModel.selectedPokemon == nil)
@@ -260,7 +256,7 @@ struct PokemonIntegrationTests {
         #expect(viewModel.selectedPokemon == pokemon3)
 
         // Detail should eventually match the final selection
-        if let detail = viewModel.pokemonDetail {
+        if let detail = viewModel.selectedPokemon {
             // The mock service returns ID based on URL, so check consistency
             #expect(detail.id == pokemon3.id)
         }

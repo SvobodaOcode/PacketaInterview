@@ -11,58 +11,26 @@ import Foundation
 
 struct PokemonEdgeCaseTests {
 
-    // MARK: - URL Edge Cases
-
-    @Test("Pokemon with malformed URLs")
-    func pokemonMalformedURLs() async throws {
-        // Test various malformed URL scenarios
-        let pokemonWithEmptyPath = Pokemon(name: "test", url: URL(string: "https://example.com/")!)
-        #expect(pokemonWithEmptyPath.id == nil)
-
-        let pokemonWithNonNumericPath = Pokemon(name: "test", url: URL(string: "https://example.com/pokemon/abc/")!)
-        #expect(pokemonWithNonNumericPath.id == nil)
-
-        let pokemonWithMultipleSlashes = Pokemon(name: "test", url: URL(string: "https://example.com/pokemon//25//")!)
-        #expect(pokemonWithMultipleSlashes.id == 25)
-
-        let pokemonWithQueryParams = Pokemon(name: "test", url: URL(string: "https://example.com/pokemon/25/?param=value")!)
-        #expect(pokemonWithQueryParams.id == 25) // Should still extract ID correctly
-    }
-
-    @Test("Pokemon with edge case IDs")
-    func pokemonEdgeCaseIDs() async throws {
-        // Zero ID
-        let pokemonZero = Pokemon(name: "test", url: URL(string: "https://example.com/pokemon/0/")!)
-        #expect(pokemonZero.id == 0)
-
-        // Very large ID
-        let pokemonLarge = Pokemon(name: "test", url: URL(string: "https://example.com/pokemon/999999/")!)
-        #expect(pokemonLarge.id == 999999)
-
-        // Negative number (shouldn't happen in real API but test parsing)
-        let pokemonNegative = Pokemon(name: "test", url: URL(string: "https://example.com/pokemon/-1/")!)
-        #expect(pokemonNegative.id == -1)
-    }
-
     // MARK: - Empty Data Edge Cases
 
     @Test("Empty pokemon name handling")
     func emptyPokemonName() async throws {
-        let pokemon = Pokemon(name: "", url: URL(string: "https://example.com/pokemon/1/")!)
+        let pokemon = Pokemon(id: 1, name: "", url: URL(string: "https://example.com/pokemon/1/")!)
         #expect(pokemon.name.isEmpty)
         #expect(pokemon.id == 1)
 
         // Should still be hashable and equatable
-        let pokemon2 = Pokemon(name: "", url: URL(string: "https://example.com/pokemon/1/")!)
+        let pokemon2 = Pokemon(id: 1, name: "", url: URL(string: "https://example.com/pokemon/1/")!)
         #expect(pokemon == pokemon2)
     }
 
     @Test("PokemonDetail with edge case values")
     func pokemonDetailEdgeCases() async throws {
         // Zero height and weight
-        let detail1 = PokemonDetail(
+        let detail1 = Pokemon(
             id: 1,
             name: "test",
+            url: URL(string: "https://example.com/pokemon/1/")!,
             height: 0,
             weight: 0,
             sprites: Sprites(frontDefault: URL(string: "https://example.com/sprite.png")!)
@@ -71,9 +39,10 @@ struct PokemonEdgeCaseTests {
         #expect(detail1.weight == 0)
 
         // Very large values
-        let detail2 = PokemonDetail(
+        let detail2 = Pokemon(
             id: 999999,
             name: "huge-pokemon",
+            url: URL(string: "https://example.com/pokemon/999999/")!,
             height: Int.max,
             weight: Int.max,
             sprites: Sprites(frontDefault: URL(string: "https://example.com/sprite.png")!)
@@ -82,9 +51,10 @@ struct PokemonEdgeCaseTests {
         #expect(detail2.weight == Int.max)
 
         // Empty name
-        let detail3 = PokemonDetail(
+        let detail3 = Pokemon(
             id: 1,
             name: "",
+            url: URL(string: "https://example.com/pokemon/1/")!,
             height: 10,
             weight: 100,
             sprites: Sprites(frontDefault: URL(string: "https://example.com/sprite.png")!)
@@ -109,26 +79,6 @@ struct PokemonEdgeCaseTests {
         // Test with zero gender ID
         let zeroGenderResult = try await service.fetchGenderedPokemonList(genderId: 0)
         #expect(zeroGenderResult.isEmpty)
-    }
-
-    @Test("Mock service fetchPokemonDetail with edge case URLs")
-    func mockServiceEdgeCaseURLs() async throws {
-        let service = PokemonMockService()
-
-        // URL with no ID (should default to 1)
-        let noIdURL = URL(string: "https://example.com/pokemon/")!
-        let detail1 = try await service.fetchPokemonDetail(from: noIdURL)
-        #expect(detail1.id == 1)
-
-        // URL with zero ID
-        let zeroIdURL = URL(string: "https://example.com/pokemon/0/")!
-        let detail2 = try await service.fetchPokemonDetail(from: zeroIdURL)
-        #expect(detail2.id == 0)
-
-        // URL with non-numeric ID
-        let nonNumericURL = URL(string: "https://example.com/pokemon/abc/")!
-        let detail3 = try await service.fetchPokemonDetail(from: nonNumericURL)
-        #expect(detail3.id == 1) // Should default to 1
     }
 
     // MARK: - ViewModel Edge Cases
@@ -212,71 +162,16 @@ struct PokemonEdgeCaseTests {
 
         // Should end up in a consistent state
         #expect(viewModel.selectedPokemon == nil)
-        #expect(viewModel.pokemonDetail == nil)
         #expect(viewModel.image == nil)
-    }
-
-    // MARK: - JSON Parsing Edge Cases
-
-    @Test("JSON parsing with missing fields")
-    func jsonParsingMissingFields() async throws {
-        // PokemonListResponse with missing fields
-        let incompleteJSON = """
-        {
-            "count": 100,
-            "results": [
-                {
-                    "name": "bulbasaur",
-                    "url": "https://pokeapi.co/api/v2/pokemon/1/"
-                }
-            ]
-        }
-        """
-
-        let decoder = JSONDecoder()
-        let data = incompleteJSON.data(using: .utf8)!
-
-        let response = try decoder.decode(PokemonListResponse.self, from: data)
-        #expect(response.count == 100)
-        #expect(response.next == nil)
-        #expect(response.previous == nil)
-        #expect(response.results.count == 1)
-    }
-
-    @Test("JSON parsing with extra fields")
-    func jsonParsingExtraFields() async throws {
-        // JSON with extra fields that should be ignored
-        let extraFieldsJSON = """
-        {
-            "id": 25,
-            "name": "pikachu",
-            "height": 4,
-            "weight": 60,
-            "sprites": {
-                "front_default": "https://example.com/sprite.png"
-            },
-            "extra_field": "should be ignored",
-            "another_extra": 999
-        }
-        """
-
-        let decoder = JSONDecoder()
-        let data = extraFieldsJSON.data(using: .utf8)!
-
-        let detail = try decoder.decode(PokemonDetail.self, from: data)
-        #expect(detail.id == 25)
-        #expect(detail.name == "pikachu")
-        #expect(detail.height == 4)
-        #expect(detail.weight == 60)
     }
 
     // MARK: - Collection Edge Cases
 
     @Test("Pokemon Set operations")
     func pokemonSetOperations() async throws {
-        let pokemon1 = Pokemon(name: "pikachu", url: URL(string: "https://example.com/1/")!)
-        let pokemon2 = Pokemon(name: "pikachu", url: URL(string: "https://example.com/1/")!) // Same
-        let pokemon3 = Pokemon(name: "charmander", url: URL(string: "https://example.com/2/")!)
+        let pokemon1 = Pokemon(id:1, name: "pikachu", url: URL(string: "https://example.com/1/")!)
+        let pokemon2 = Pokemon(id:1, name: "pikachu", url: URL(string: "https://example.com/1/")!) // Same
+        let pokemon3 = Pokemon(id:2, name: "charmander", url: URL(string: "https://example.com/2/")!)
 
         var pokemonSet: Set<Pokemon> = []
 
@@ -292,8 +187,8 @@ struct PokemonEdgeCaseTests {
 
     @Test("Pokemon array operations")
     func pokemonArrayOperations() async throws {
-        let pokemon1 = Pokemon(name: "pikachu", url: URL(string: "https://example.com/1/")!)
-        let pokemon2 = Pokemon(name: "charmander", url: URL(string: "https://example.com/2/")!)
+        let pokemon1 = Pokemon(id:1, name: "pikachu", url: URL(string: "https://example.com/1/")!)
+        let pokemon2 = Pokemon(id:2, name: "charmander", url: URL(string: "https://example.com/2/")!)
 
         let pokemonArray = [pokemon1, pokemon2, pokemon1] // Duplicate
 

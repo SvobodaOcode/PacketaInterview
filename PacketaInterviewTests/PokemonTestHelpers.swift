@@ -18,15 +18,17 @@ struct PokemonTestHelpers {
 
     static func createPokemon(name: String, id: Int) -> Pokemon {
         return Pokemon(
+            id: id,
             name: name,
             url: URL(string: "https://pokeapi.co/api/v2/pokemon/\(id)/")!
         )
     }
 
-    static func createPokemonDetail(id: Int, name: String, height: Int = 10, weight: Int = 100) -> PokemonDetail {
-        return PokemonDetail(
+    static func createPokemonDetail(id: Int, name: String, height: Int = 10, weight: Int = 100) -> Pokemon {
+        return Pokemon(
             id: id,
             name: name,
+            url: URL(string: "https://pokeapi.co/api/v2/pokemon/\(id)/")!,
             height: height,
             weight: weight,
             sprites: Sprites(frontDefault: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(id).png")!)
@@ -139,6 +141,14 @@ struct PokemonTestHelpers {
 // MARK: - Failing Test Service (for error testing)
 
 class FailingPokemonService: PokemonServiceType {
+    func refreshPokemonList() async throws -> [PacketaInterview.Pokemon] {
+        throw APIError.invalidData
+    }
+    
+    func fetchPokemonDetail(for pokemon: PacketaInterview.Pokemon) async throws -> PacketaInterview.Pokemon {
+        throw APIError.invalidData
+    }
+    
     func fetchPokemonList() async throws -> [Pokemon] {
         throw APIError.invalidData
     }
@@ -147,7 +157,7 @@ class FailingPokemonService: PokemonServiceType {
         throw APIError.invalidData
     }
 
-    func fetchPokemonDetail(from url: URL) async throws -> PokemonDetail {
+    func fetchPokemonDetail(from url: URL) async throws -> Pokemon {
         throw APIError.invalidData
     }
 
@@ -174,7 +184,7 @@ struct PokemonTestAssertions {
         #expect(pokemon1.id == pokemon2.id)
     }
 
-    static func assertPokemonDetailEqual(_ detail1: PokemonDetail, _ detail2: PokemonDetail) {
+    static func assertPokemonDetailEqual(_ detail1: Pokemon, _ detail2: Pokemon) {
         #expect(detail1.id == detail2.id)
         #expect(detail1.name == detail2.name)
         #expect(detail1.height == detail2.height)

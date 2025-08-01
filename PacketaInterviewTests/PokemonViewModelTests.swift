@@ -21,7 +21,6 @@ struct PokemonViewModelTests {
         let viewModel = PokemonViewModel()
 
         #expect(viewModel.filteredPokemonList.isEmpty)
-        #expect(viewModel.pokemonDetail == nil)
         #expect(viewModel.image == nil)
         #expect(viewModel.isDownloading == false)
         #expect(viewModel.selectedPokemon == nil)
@@ -33,7 +32,6 @@ struct PokemonViewModelTests {
         let viewModel = PokemonViewModel(pokemonService: mockService)
 
         #expect(viewModel.filteredPokemonList.isEmpty)
-        #expect(viewModel.pokemonDetail == nil)
         #expect(viewModel.image == nil)
         #expect(viewModel.isDownloading == false)
         #expect(viewModel.selectedPokemon == nil)
@@ -125,7 +123,7 @@ struct PokemonViewModelTests {
 
     // MARK: - Selected Pokemon Tests
 
-    @Test("selectedPokemon updates clear detail and image")
+    @Test("selectedPokemon updates clear image")
     func selectedPokemonUpdatesClearState() async throws {
         let mockService = PokemonMockService()
         let viewModel = PokemonViewModel(pokemonService: mockService)
@@ -133,13 +131,7 @@ struct PokemonViewModelTests {
         await viewModel.fetchInitialData()
 
         // Set up some existing state
-        viewModel.pokemonDetail = PokemonDetail(
-            id: 1,
-            name: "test",
-            height: 10,
-            weight: 100,
-            sprites: Sprites(frontDefault: URL(string: "https://example.com")!)
-        )
+        viewModel.image = UIImage()
 
         // Select a pokemon
         let pokemon = viewModel.filteredPokemonList[0]
@@ -149,8 +141,8 @@ struct PokemonViewModelTests {
         try await Task.sleep(for: .milliseconds(100))
 
         #expect(viewModel.selectedPokemon == pokemon)
-        // pokemonDetail might be nil initially but should eventually be populated
-        // We'll test this in the fetchPokemonDetail test
+        // Image should be cleared when a new pokemon is selected
+        #expect(viewModel.image == nil)
     }
 
     @Test("fetchPokemonDetail success")
@@ -158,15 +150,15 @@ struct PokemonViewModelTests {
         let mockService = PokemonMockService()
         let viewModel = PokemonViewModel(pokemonService: mockService)
 
-        let pokemon = Pokemon(name: "pikachu", url: URL(string: "https://pokeapi.co/api/v2/pokemon/25/")!)
+        let pokemon = PokemonTestHelpers.createPokemon(name: "pikachu", id: 25)
         viewModel.selectedPokemon = pokemon
         await viewModel.fetchPokemonDetail(for: pokemon)
-        
-        #expect(viewModel.pokemonDetail != nil)
-        #expect(viewModel.pokemonDetail?.id == 25)
-        #expect(viewModel.pokemonDetail?.name == "Mock Pokemon")
-        #expect(viewModel.pokemonDetail?.height == 10)
-        #expect(viewModel.pokemonDetail?.weight == 100)
+
+        #expect(viewModel.selectedPokemon != nil)
+        #expect(viewModel.selectedPokemon?.id == 25)
+        #expect(viewModel.selectedPokemon?.name == "pikachu")
+        #expect(viewModel.selectedPokemon?.height == 10)
+        #expect(viewModel.selectedPokemon?.weight == 100)
     }
 
     // MARK: - Image Loading Tests
@@ -188,13 +180,7 @@ struct PokemonViewModelTests {
         let viewModel = PokemonViewModel(pokemonService: mockService)
 
         // Set up pokemon detail
-        viewModel.pokemonDetail = PokemonDetail(
-            id: 25,
-            name: "pikachu",
-            height: 4,
-            weight: 60,
-            sprites: Sprites(frontDefault: URL(string: "https://example.com/sprite.png")!)
-        )
+        viewModel.selectedPokemon = PokemonTestHelpers.createPokemonDetail(id: 25, name: "pikachu")
 
         await viewModel.loadImage()
 
@@ -208,13 +194,7 @@ struct PokemonViewModelTests {
         let viewModel = PokemonViewModel(pokemonService: mockService)
 
         // Set up pokemon detail and existing image
-        viewModel.pokemonDetail = PokemonDetail(
-            id: 25,
-            name: "pikachu",
-            height: 4,
-            weight: 60,
-            sprites: Sprites(frontDefault: URL(string: "https://example.com/sprite.png")!)
-        )
+        viewModel.selectedPokemon = PokemonTestHelpers.createPokemonDetail(id: 25, name: "pikachu")
 
         // Simulate existing image (in real app this would be UIImage)
         // For testing, we'll load once and verify it doesn't change
@@ -251,7 +231,7 @@ struct PokemonViewModelTests {
         try await Task.sleep(for: .milliseconds(100))
 
         #expect(viewModel.selectedPokemon == selectedPokemon)
-        #expect(viewModel.pokemonDetail != nil)
+        #expect(viewModel.selectedPokemon?.height != nil)
 
         // 5. Load image
         await viewModel.loadImage()
@@ -265,13 +245,7 @@ struct PokemonViewModelTests {
         let mockService = PokemonMockService()
         let viewModel = PokemonViewModel(pokemonService: mockService)
 
-        viewModel.pokemonDetail = PokemonDetail(
-            id: 25,
-            name: "pikachu",
-            height: 4,
-            weight: 60,
-            sprites: Sprites(frontDefault: URL(string: "https://example.com/sprite.png")!)
-        )
+        viewModel.selectedPokemon = PokemonTestHelpers.createPokemonDetail(id: 25, name: "pikachu")
 
         #expect(viewModel.isDownloading == false)
 
@@ -309,11 +283,11 @@ struct PokemonViewModelTests {
         let failingService = FailingPokemonService()
         let viewModel = PokemonViewModel(pokemonService: failingService)
 
-        let pokemon = Pokemon(name: "pikachu", url: URL(string: "https://pokeapi.co/api/v2/pokemon/25/")!)
+        let pokemon = PokemonTestHelpers.createPokemon(name: "pikachu", id: 25)
 
         await viewModel.fetchPokemonDetail(for: pokemon)
 
-        #expect(viewModel.pokemonDetail == nil)
+        #expect(viewModel.selectedPokemon?.height == nil)
     }
 
     @Test("error handling in image loading")
@@ -323,13 +297,7 @@ struct PokemonViewModelTests {
         let failingService = FailingPokemonService()
         let viewModel = PokemonViewModel(pokemonService: failingService)
 
-        viewModel.pokemonDetail = PokemonDetail(
-            id: 25,
-            name: "pikachu",
-            height: 4,
-            weight: 60,
-            sprites: Sprites(frontDefault: URL(string: "https://example.com/sprite.png")!)
-        )
+        viewModel.selectedPokemon = PokemonTestHelpers.createPokemonDetail(id: 25, name: "pikachu")
 
         await viewModel.loadImage()
 

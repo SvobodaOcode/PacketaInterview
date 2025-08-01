@@ -13,7 +13,7 @@ struct PokemonDetailView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
-            if let detail = viewModel.pokemonDetail {
+            if let detail = viewModel.selectedPokemon {
                 Text(detail.name.capitalized)
                     .font(.largeTitle)
                     .padding(.top, 20)
@@ -35,9 +35,13 @@ struct PokemonDetailView: View {
                     }
                 }
 
-                Text("ID: \(detail.id)")
-                Text("Height: \(detail.height)")
-                Text("Weight: \(detail.weight)")
+                if let height = detail.height, let weight = detail.weight {
+                    Text("ID: \(detail.id)")
+                    Text("Height: \(height)")
+                    Text("Weight: \(weight)")
+                } else {
+                    Text("Missing details")
+                }
 
                 Spacer()
 
@@ -91,14 +95,23 @@ class DetailViewController: UIViewController {
     }
 }
 
-#Preview("Pokemon Detail - With Image") {
+#Preview("Pokemon Detail") {
     let mockService = PokemonMockService()
     let viewModel = PokemonViewModel(pokemonService: mockService)
 
-    // Set up sample data
-    let samplePokemon = Pokemon(name: "charmander", url: URL(string: "https://pokeapi.co/api/v2/pokemon/4/")!)
-    viewModel.selectedPokemon = samplePokemon
+    viewModel.selectedPokemon = Pokemon(id: 4, name: "charmander", url: URL(string: "https://pokeapi.co/api/v2/pokemon/4/")!)
 
+    return PokemonDetailView(viewModel: viewModel)
+}
+
+#Preview("Pokemon Detail - No details") {
+    let mockService = PokemonMockService()
+    let viewModel = PokemonViewModel(pokemonService: mockService)
+    
+    viewModel.selectedPokemon = Pokemon(id: 4, name: "charmander", url: URL(string: "https://pokeapi.co/api/v2/pokemon/4/")!)
+    viewModel.selectedPokemon?.height = 0
+    viewModel.selectedPokemon?.weight = nil
+    
     return PokemonDetailView(viewModel: viewModel)
 }
 

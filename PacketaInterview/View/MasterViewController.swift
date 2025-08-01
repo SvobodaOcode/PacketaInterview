@@ -15,6 +15,7 @@ class MasterViewController: UITableViewController {
 
     private var viewModel: PokemonViewModel
     private var cancellables = Set<AnyCancellable>()
+    private let refreshController = UIRefreshControl()
 
     init(viewModel: PokemonViewModel) {
         self.viewModel = viewModel
@@ -42,6 +43,9 @@ class MasterViewController: UITableViewController {
         tableView.tableHeaderView = headerView
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
 
+        refreshController.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        tableView.refreshControl = refreshController
+
         setupBindings()
     }
 
@@ -57,6 +61,7 @@ class MasterViewController: UITableViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.tableView.reloadData()
+                self?.refreshController.endRefreshing()
             }
             .store(in: &cancellables)
 
@@ -67,6 +72,12 @@ class MasterViewController: UITableViewController {
                 self?.updateVisibleCells()
             }
             .store(in: &cancellables)
+    }
+
+    @objc private func refreshData() {
+        Task {
+            await viewModel.refreshData()
+        }
     }
 
     @objc func sortingControlAction(_ segmentedControl: UISegmentedControl) {
@@ -139,19 +150,24 @@ struct MasterViewControllerRepresentable: UIViewControllerRepresentable {
 
 #if DEBUG
 class PokemonLongNameMockService: PokemonServiceType {
-    let pokemon = Pokemon(name: "Thermochromatodraconectrosylvaflorastrixquillazapodentrogargantuquasarmaridon", url: URL("pokemon.com/1")!)
-    let pokemon2 = Pokemon(name: "MegalopsychedelicthunderstormicvolcaniccrystallineaquaticaerodynamicpsychokineticultradimensionalspectralholographicbioluminescentelectromagnetictelepathicshapeShiftingmultiversalchronomanipulatingomnipotentarcanedragonwyrmserpentineleviathanbehemothcolossustitanicgigantamaximalextraordinarysupercalifragilisticexpialidociousmon", url: URL("pokemon.com/2")!)
-    
+    let pokemon = Pokemon(id: 1, name: "Thermochromatodraconectrosylvaflorastrixquillazapodentrogargantuquasarmaridon", url: URL(string:"pokemon.com/1")!)
+    let pokemon2 = Pokemon(id: 2, name: "MegalopsychedelicthunderstormicvolcaniccrystallineaquaticaerodynamicpsychokineticultradimensionalspectralholographicbioluminescentelectromagnetictelepathicshapeShiftingmultiversalchronomanipulatingomnipotentarcanedragonwyrmserpentineleviathanbehemothcolossustitanicgigantamaximalextraordinarysupercalifragilisticexpialidociousmon", url: URL(string:"pokemon.com/2")!)
+
     func fetchPokemonList() async throws -> [Pokemon] { [pokemon, pokemon2] }
+    func refreshPokemonList() async throws -> [Pokemon] { [pokemon, pokemon2] }
     func fetchGenderedPokemonList(genderId: Int) async throws -> [Pokemon]  { [] }
-    func fetchPokemonDetail(from url: URL) async throws -> PokemonDetail {
-        PokemonDetail(id: pokemon.id!, name: pokemon.name, height: 1, weight: 1, sprites: nil) }
+    func fetchPokemonDetail(for pokemon: Pokemon) async throws -> Pokemon {
+        var detailedPokemon = pokemon
+        detailedPokemon.height = 1
+        detailedPokemon.weight = 1
+        return detailedPokemon
+    }
     func downloadImage(from url: URL) async throws -> UIImage? { nil }
 }
 
 class MockImageDownloader: ImageCacheType {
     func saveImage(_ image: UIImage, for pokemonId: Int) { }
-    
+
     func loadImage(for pokemonId: Int) -> UIImage? {
         if pokemonId == 2 {
             let symbolName = "photo"
@@ -162,12 +178,12 @@ class MockImageDownloader: ImageCacheType {
         }
         return nil
     }
-    
+
     func hasImage(for pokemonId: Int) -> Bool {
         if pokemonId == 1 { return true }
         else { return false }
     }
-    
+
     func clearCache() { }
 }
 

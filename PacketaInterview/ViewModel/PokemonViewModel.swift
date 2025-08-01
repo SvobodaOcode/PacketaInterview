@@ -31,7 +31,6 @@ class PokemonViewModel: ObservableObject {
     private var malePokemon = [Pokemon]()
     private var femalePokemon = [Pokemon]()
 
-    @Published var pokemonDetail: PokemonDetail?
     @Published var image: UIImage?
     @Published var isDownloading = false
 
@@ -45,13 +44,20 @@ class PokemonViewModel: ObservableObject {
         didSet {
             // Cancel any ongoing detail fetch task
             detailFetchTask?.cancel()
-
-            pokemonDetail = nil
             image = nil
-            if let selectedPokemon {
-                detailFetchTask = Task {
-                    await fetchPokemonDetail(for: selectedPokemon)
+
+            guard let selectedPokemon else { return }
+
+            // If we have details, don't re-fetch
+            if selectedPokemon.height != nil {
+                if let cachedImage = imageCache.loadImage(for: selectedPokemon.id) {
+                    self.image = cachedImage
                 }
+                return
+            }
+
+            detailFetchTask = Task {
+                await fetchPokemonDetail(for: selectedPokemon)
             }
         }
     }
@@ -89,6 +95,28 @@ class PokemonViewModel: ObservableObject {
         }
     }
 
+    @MainActor
+    func refreshData() async {
+        do {
+            async let pokemonList = pokemonService.refreshPokemonList()
+            async let males = pokemonService.fetchGenderedPokemonList(genderId: 2)
+            async let females = pokemonService.fetchGenderedPokemonList(genderId: 1)
+
+            let (allPokemon, malePokemons, femalePokemons) = try await (pokemonList, males, females)
+
+            self.allPokemonList = allPokemon
+            // sorting can be preserved if needed
+            self.filteredPokemonList = allPokemon
+            self.malePokemon = malePokemons
+            self.femalePokemon = femalePokemons
+
+            // Load cached images for the Pokemon list
+            loadCachedImages()
+        } catch {
+            print("Failed to refresh Pokemon data: \(error)")
+        }
+    }
+
     func sortPokemon(by sortOption: SortOption) {
         switch sortOption {
         case .all:
@@ -108,24 +136,23 @@ class PokemonViewModel: ObservableObject {
     @MainActor
     func fetchPokemonDetail(for pokemon: Pokemon) async {
         do {
-            let detail = try await pokemonService.fetchPokemonDetail(from: pokemon.url)
+            print("fetch detail for \(pokemon.name)")
+            let detail = try await pokemonService.fetchPokemonDetail(for: pokemon)
 
             // Check if task was cancelled or if selection changed
             guard !Task.isCancelled, selectedPokemon?.name == pokemon.name else {
                 return
             }
 
-            pokemonDetail = detail
-            guard let pokemonDetail else { return }
-
-            // Check cache first
-            if let cachedImage = imageCache.loadImage(for: pokemonDetail.id) {
-                image = cachedImage
-                cachedImages[pokemonDetail.id] = cachedImage
-                print("Set detail with cached image of \(pokemon.name) \(detail.id)")
-            } else {
-                print("Set detail of \(pokemon.name) \(detail.id)")
+            // Update the lists
+            if let index = allPokemonList.firstIndex(where: { $0.id == detail.id }) {
+                allPokemonList[index] = detail
             }
+            if let index = filteredPokemonList.firstIndex(where: { $0.id == detail.id }) {
+                filteredPokemonList[index] = detail
+            }
+
+            self.selectedPokemon = detail
         } catch {
             // Don't show error if task was cancelled
             if !Task.isCancelled {
@@ -136,12 +163,13 @@ class PokemonViewModel: ObservableObject {
 
     @MainActor
     func loadImage() async {
-        guard let pokemonDetail, image == nil else { return }
+        guard let pokemonDetail = selectedPokemon, image == nil else { return }
+        let pokemonId = pokemonDetail.id
 
         // Check cache first
-        if let cachedImage = imageCache.loadImage(for: pokemonDetail.id) {
+        if let cachedImage = imageCache.loadImage(for: pokemonId) {
             image = cachedImage
-            cachedImages[pokemonDetail.id] = cachedImage
+            cachedImages[pokemonId] = cachedImage
             return
         }
 
@@ -154,8 +182,8 @@ class PokemonViewModel: ObservableObject {
 
             // Save to cache
             if let downloadedImage {
-                imageCache.saveImage(downloadedImage, for: pokemonDetail.id)
-                cachedImages[pokemonDetail.id] = downloadedImage
+                imageCache.saveImage(downloadedImage, for: pokemonId)
+                cachedImages[pokemonId] = downloadedImage
             }
         } catch {
             print("Failed to download image: \(error)")
@@ -166,15 +194,13 @@ class PokemonViewModel: ObservableObject {
 
     private func loadCachedImages() {
         for pokemon in allPokemonList {
-            guard let pokemonId = pokemon.id else { continue }
-            if let cachedImage = imageCache.loadImage(for: pokemonId) {
-                cachedImages[pokemonId] = cachedImage
+            if let cachedImage = imageCache.loadImage(for: pokemon.id) {
+                cachedImages[pokemon.id] = cachedImage
             }
         }
     }
 
     func getCachedImage(for pokemon: Pokemon) -> UIImage? {
-        guard let pokemonId = pokemon.id else { return nil }
-        return cachedImages[pokemonId]
+        return cachedImages[pokemon.id]
     }
 }
