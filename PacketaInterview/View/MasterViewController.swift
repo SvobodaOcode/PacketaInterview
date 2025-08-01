@@ -82,6 +82,7 @@ class MasterViewController: UITableViewController {
 
         if let cachedImage = viewModel.getCachedImage(for: pokemon) {
             content.image = cachedImage
+            content.imageProperties.maximumSize = CGSize(width: 44, height: 44)
         } else {
             content.image = nil
         }
@@ -136,10 +137,48 @@ struct MasterViewControllerRepresentable: UIViewControllerRepresentable {
     }
 }
 
-#Preview("Pokemon Master List") {
-    let mockService = PokemonMockService()
-    let viewModel = PokemonViewModel(pokemonService: mockService)
+#if DEBUG
+class PokemonLongNameMockService: PokemonServiceType {
+    let pokemon = Pokemon(name: "Thermochromatodraconectrosylvaflorastrixquillazapodentrogargantuquasarmaridon", url: URL("pokemon.com/1")!)
+    let pokemon2 = Pokemon(name: "MegalopsychedelicthunderstormicvolcaniccrystallineaquaticaerodynamicpsychokineticultradimensionalspectralholographicbioluminescentelectromagnetictelepathicshapeShiftingmultiversalchronomanipulatingomnipotentarcanedragonwyrmserpentineleviathanbehemothcolossustitanicgigantamaximalextraordinarysupercalifragilisticexpialidociousmon", url: URL("pokemon.com/2")!)
+    
+    func fetchPokemonList() async throws -> [Pokemon] { [pokemon, pokemon2] }
+    func fetchGenderedPokemonList(genderId: Int) async throws -> [Pokemon]  { [] }
+    func fetchPokemonDetail(from url: URL) async throws -> PokemonDetail {
+        PokemonDetail(id: pokemon.id!, name: pokemon.name, height: 1, weight: 1, sprites: nil) }
+    func downloadImage(from url: URL) async throws -> UIImage? { nil }
+}
 
-    return MasterViewControllerRepresentable(viewModel: viewModel)
+class MockImageDownloader: ImageCacheType {
+    func saveImage(_ image: UIImage, for pokemonId: Int) { }
+    
+    func loadImage(for pokemonId: Int) -> UIImage? {
+        if pokemonId == 2 {
+            let symbolName = "photo"
+            let configuration = UIImage.SymbolConfiguration(pointSize: 60, weight: .regular)
+            guard let symbolImage = UIImage(systemName: symbolName, withConfiguration: configuration)
+            else { return nil }
+            return symbolImage
+        }
+        return nil
+    }
+    
+    func hasImage(for pokemonId: Int) -> Bool {
+        if pokemonId == 1 { return true }
+        else { return false }
+    }
+    
+    func clearCache() { }
+}
+
+
+#endif
+
+#Preview("Pokemon Master List") {
+    let longNameMockService = PokemonLongNameMockService()
+    let mockImageDownloader = MockImageDownloader()
+    let viewModel = PokemonViewModel(pokemonService: longNameMockService, imageCache: mockImageDownloader)
+
+    MasterViewControllerRepresentable(viewModel: viewModel)
         .ignoresSafeArea()
 }
