@@ -8,13 +8,33 @@
 import UIKit
 import Foundation
 
+/// A protocol defining the contract for an image caching system.
+/// This abstraction allows for different caching implementations, such as in-memory or file-based.
 protocol ImageCacheType {
+    /// Saves an image to the cache, associated with a specific Pokémon ID.
+    /// - Parameters:
+    ///   - image: The `UIImage` to be cached.
+    ///   - pokemonId: The unique identifier for the Pokémon.
     func saveImage(_ image: UIImage, for pokemonId: Int)
+
+    /// Loads an image from the cache for a specific Pokémon ID.
+    /// - Parameter pokemonId: The unique identifier for the Pokémon.
+    /// - Returns: An optional `UIImage`. Returns `nil` if no image is cached for the given ID.
     func loadImage(for pokemonId: Int) -> UIImage?
+
+    /// Checks if an image for a specific Pokémon ID exists in the cache.
+    /// - Parameter pokemonId: The unique identifier for the Pokémon.
+    /// - Returns: `true` if an image is cached, `false` otherwise.
     func hasImage(for pokemonId: Int) -> Bool
+
+    /// Removes all images from the cache.
     func clearCache()
 }
 
+/// A singleton class that manages a file-based cache for Pokémon images.
+///
+/// This class handles saving and loading `UIImage` objects as PNG files in a dedicated
+/// cache directory within the app's Documents folder.
 class ImageCacheManager: ImageCacheType {
     static let shared = ImageCacheManager()
 

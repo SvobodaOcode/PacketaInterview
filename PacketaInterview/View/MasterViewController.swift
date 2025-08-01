@@ -10,6 +10,11 @@ import SnapKit
 import SwiftUI
 import UIKit
 
+/// Displays the primary list of Pokémon in a `UITableView`.
+///
+/// This class is responsible for showing the list of Pokémon, handling user selections,
+/// and coordinating with the `PokemonViewModel` to refresh and sort the data. It also
+/// sets up the sorting control and pull-to-refresh functionality.
 class MasterViewController: UITableViewController {
     let sortingControl = UISegmentedControl(items: SortOption.allCases.map { $0.title })
 
@@ -56,6 +61,7 @@ class MasterViewController: UITableViewController {
         }
     }
 
+    /// Sets up Combine subscribers to observe changes in the `PokemonViewModel`.
     private func setupBindings() {
         viewModel.$filteredPokemonList
             .receive(on: RunLoop.main)
@@ -74,12 +80,14 @@ class MasterViewController: UITableViewController {
             .store(in: &cancellables)
     }
 
+    /// Action triggered by the pull-to-refresh control.
     @objc private func refreshData() {
         Task {
             await viewModel.refreshData()
         }
     }
 
+    /// Action triggered when the user changes the sorting option in the segmented control.
     @objc func sortingControlAction(_ segmentedControl: UISegmentedControl) {
         let selectedIndex = segmentedControl.selectedSegmentIndex
         if let sortOption = SortOption(rawValue: selectedIndex) {
@@ -87,6 +95,7 @@ class MasterViewController: UITableViewController {
         }
     }
 
+    /// Configures the content of a table view cell with Pokémon data.
     private func configureCellContent(cell: UITableViewCell, pokemon: Pokemon) {
         var content = cell.defaultContentConfiguration()
         content.text = pokemon.name.capitalized
@@ -101,6 +110,8 @@ class MasterViewController: UITableViewController {
         cell.contentConfiguration = content
     }
 
+    /// Updates the content of the currently visible cells.
+    /// This is called when cached images are loaded, to ensure visible cells display the new images.
     private func updateVisibleCells() {
         for cell in tableView.visibleCells {
             guard let indexPath = tableView.indexPath(for: cell),

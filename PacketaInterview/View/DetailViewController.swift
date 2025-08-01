@@ -8,7 +8,13 @@
 import SwiftUI
 import UIKit
 
+/// A SwiftUI view that displays the details of a selected Pokémon.
+///
+/// This view observes a `PokemonViewModel` to get the data it needs to display,
+/// including the Pokémon's name, image, and other attributes. It also handles
+/// the state for image downloading and provides a button to trigger the download.
 struct PokemonDetailView: View {
+    /// The view model that provides the state and business logic for this view.
     @ObservedObject var viewModel: PokemonViewModel
 
     var body: some View {
@@ -66,6 +72,10 @@ struct PokemonDetailView: View {
     }
 }
 
+/// A `UIViewController` that hosts the `PokemonDetailView` SwiftUI view.
+///
+/// This class acts as a bridge between the UIKit-based navigation and the SwiftUI detail view,
+/// allowing the SwiftUI view to be presented within the `UISplitViewController`.
 class DetailViewController: UIViewController {
     var viewModel: PokemonViewModel?
 

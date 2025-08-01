@@ -7,17 +7,23 @@
 
 import Foundation
 
-// DTO for the list response
+// MARK: - Data Transfer Objects (DTOs)
+// These structs are used exclusively for decoding the JSON response from the PokéAPI.
+// They provide a layer of separation between the network response and the app's domain models,
+// making the system more resilient to API changes.
+
+/// DTO for the response from the Pokémon list endpoint.
 struct PokemonListResponse: Codable {
     let results: [PokemonDTO]
 }
 
+/// DTO for a single Pokémon entry in the list response.
 struct PokemonDTO: Codable {
     let name: String
     let url: URL
 }
 
-// DTO for the detail response
+/// DTO for the detailed response of a single Pokémon.
 struct PokemonDetailDTO: Codable {
     let id: Int
     let name: String
@@ -26,6 +32,7 @@ struct PokemonDetailDTO: Codable {
     let sprites: SpritesDTO?
 }
 
+/// DTO for the sprites object within the Pokémon detail response.
 struct SpritesDTO: Codable {
     let frontDefault: URL
 
@@ -34,7 +41,7 @@ struct SpritesDTO: Codable {
     }
 }
 
-// DTO for the gender response
+/// DTO for the response from the gender endpoint.
 struct GenderResponse: Codable {
     let pokemonSpeciesDetails: [PokemonSpeciesDetailDTO]
 
@@ -43,6 +50,7 @@ struct GenderResponse: Codable {
     }
 }
 
+/// DTO for the species detail within the gender response.
 struct PokemonSpeciesDetailDTO: Codable {
     let pokemonSpecies: PokemonDTO
 
