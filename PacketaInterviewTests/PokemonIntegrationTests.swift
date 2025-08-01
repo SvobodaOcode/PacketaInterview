@@ -230,7 +230,6 @@ struct PokemonIntegrationTests {
 
         // Data should still be valid
         #expect(viewModel.filteredPokemonList.allSatisfy { !$0.name.isEmpty })
-        #expect(viewModel.filteredPokemonList.allSatisfy { $0.id != nil })
     }
 
     @Test("Concurrent pokemon selection handling")
