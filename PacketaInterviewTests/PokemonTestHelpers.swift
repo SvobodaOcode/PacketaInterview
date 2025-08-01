@@ -179,7 +179,7 @@ struct PokemonTestAssertions {
         #expect(detail1.name == detail2.name)
         #expect(detail1.height == detail2.height)
         #expect(detail1.weight == detail2.weight)
-        #expect(detail1.sprites.frontDefault == detail2.sprites.frontDefault)
+        #expect(detail1.sprites?.frontDefault == detail2.sprites?.frontDefault)
     }
 
     static func assertPokemonListContains(_ list: [Pokemon], names: [String]) {

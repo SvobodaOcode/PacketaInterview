@@ -37,7 +37,7 @@ class PokemonViewModel: ObservableObject {
 
     // Dictionary to track cached images for list display
     @Published var cachedImages: [Int: UIImage] = [:]
-    private let imageCache = ImageCacheManager.shared
+    private let imageCache: ImageCacheType
 
     private var detailFetchTask: Task<Void, Never>?
 
@@ -58,8 +58,9 @@ class PokemonViewModel: ObservableObject {
 
     private let pokemonService: PokemonServiceType
 
-    init(pokemonService: PokemonServiceType = PokemonService.shared) {
+    init(pokemonService: PokemonServiceType = PokemonService.shared, imageCache: ImageCacheType = ImageCacheManager.shared) {
         self.pokemonService = pokemonService
+        self.imageCache = imageCache
     }
 
     deinit {
@@ -147,7 +148,8 @@ class PokemonViewModel: ObservableObject {
         isDownloading = true
         defer { isDownloading = false }
         do {
-            let downloadedImage = try await pokemonService.downloadImage(from: pokemonDetail.sprites.frontDefault)
+            guard let sprites = pokemonDetail.sprites else { return }
+            let downloadedImage = try await pokemonService.downloadImage(from: sprites.frontDefault)
             image = downloadedImage
 
             // Save to cache

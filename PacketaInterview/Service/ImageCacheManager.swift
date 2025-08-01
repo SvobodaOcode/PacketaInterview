@@ -8,16 +8,24 @@
 import UIKit
 import Foundation
 
-class ImageCacheManager {
+protocol ImageCacheType {
+    func saveImage(_ image: UIImage, for pokemonId: Int)
+    func loadImage(for pokemonId: Int) -> UIImage?
+    func hasImage(for pokemonId: Int) -> Bool
+    func clearCache()
+}
+
+class ImageCacheManager: ImageCacheType {
     static let shared = ImageCacheManager()
 
     private let fileManager = FileManager.default
     private let cacheDirectory: URL
+    private let cacheDirectoryTitle = "PokemonImageCache"
 
     private init() {
         // Create cache directory in Documents folder
         let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        cacheDirectory = documentsPath.appendingPathComponent("PokemonImageCache")
+        cacheDirectory = documentsPath.appendingPathComponent(cacheDirectoryTitle)
 
         // Create directory if it doesn't exist
         if !fileManager.fileExists(atPath: cacheDirectory.path) {

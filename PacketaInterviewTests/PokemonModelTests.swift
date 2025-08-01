@@ -86,7 +86,7 @@ struct PokemonModelTests {
         #expect(detail.name == "pikachu")
         #expect(detail.height == 4)
         #expect(detail.weight == 60)
-        #expect(detail.sprites.frontDefault.absoluteString == "https://example.com/sprite.png")
+        #expect(detail.sprites?.frontDefault.absoluteString == "https://example.com/sprite.png")
     }
 
     // MARK: - Sprites Tests
